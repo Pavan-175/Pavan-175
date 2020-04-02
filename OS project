@@ -1,0 +1,145 @@
+#include<stdio.h>
+struct process
+{
+    int AT,BT,CT,TAT,WT,BT2,COUNT;
+}
+p[5];
+int totaltime = 0;
+int prefinaltotal = 0;
+int n;
+void input()
+{
+    int i;
+	printf("\nEnter number of processes:");
+	scanf("%d",&n);
+	printf("\nEnter arrival time for process(in sec):");
+	for(i=0;i<n;i++)
+	{
+		printf("\nP%d:",i+1);
+		scanf("%d",&p[i].AT);
+	}
+	printf("\nEnter burst time for process(in sec):");
+	for(i=0;i<n;i++)
+	{
+		printf("\nP%d:",i+1);
+		scanf("%d",&p[i].BT);
+		p[i].BT2=p[i].BT2;
+		prefinaltotal += p[i].BT;
+	}
+}
+int compare(int i,int j)
+{
+    return p[i].AT< p[j].AT;
+}
+int findsmallest()
+{
+    int min = n, i;
+    p[min].BT=9999999;
+    for (i = 0; i <n; i++)
+    {
+        if(p[i].COUNT==1)
+        {
+            continue;
+        }
+        if (p[i].BT < p[min].BT)
+            min = i;
+        else if(p[min].BT==p[i].BT)
+        {
+            if(compare(i,min))
+            min=i;
+        }
+        else
+            continue;
+    }
+    return min;
+}
+void scheduling()
+{
+    int index;
+    int flag = 0;
+    for(index=0;index<n;index++)
+    {
+        p[index].COUNT=0;
+    }
+    while (1)
+    {
+        index = findsmallest();
+        p[index].COUNT=1;
+        printf("Process executing at %ds is: P%d\n",totaltime,index + 1);
+        totaltime += p[index].BT;
+        p[index].BT =0;
+        p[index].CT = totaltime;
+        printf(" Process P%d is completed at %ds\n",index+1,totaltime);
+        if (totaltime == prefinaltotal)
+            break;
+    }
+}
+void TQ(int tq)
+{
+    int count,remain=n,flag=0;
+    for(count=0;count<n;count++)
+    {
+        p[count].COUNT=0;
+    }
+    for(count=0;remain!=0;)
+    {
+    if(p[count].BT<=tq && p[count].BT>0)
+    {
+      printf("Process executing at %ds is: P%d\n",totaltime,count + 1);  
+      totaltime+=p[count].BT;
+      p[count].BT=0;
+      p[count].CT=totaltime;
+      printf(" Process P%d is completed at %ds\n",count+1,totaltime);
+    }
+    else if(p[count].BT>0)
+    {
+      printf("Process executing at %ds is: P%d\n",totaltime,count + 1);
+      p[count].BT-=tq;
+      totaltime+=tq;
+      p[count].COUNT++;
+    }
+    if(p[count].COUNT==1)
+    {
+        remain--;
+    }
+    if(count==n-1)
+      count=0;
+    else if(p[count+1].AT<=totaltime)
+      count++;
+    else
+      count=0;
+  }
+}
+int main()
+{
+	int i;
+	float avgTime=0;
+	float avgWT=0;
+	int minAT=0;
+	input();
+	for(i=1;i<n;i++)
+        if(p[minAT].AT>p[i].AT)
+            minAT=i;
+    totaltime += p[minAT].AT;
+    prefinaltotal += p[minAT].AT;
+	printf("After First Iteration(TQ=6)\n");
+	TQ(6);
+	printf("\nAfter Second Iteration(TQ=10)\n");
+	TQ(10);
+	printf("\nAfter Third Iteration\n");
+	scheduling();
+	for(i=0;i<n;i++)
+	{
+		p[i].TAT=p[i].CT-p[i].AT;
+		p[i].WT=p[i].TAT-p[i].BT2;
+		printf("\nCT of P%d:%ds \n",i+1,p[i].CT);
+		printf("TAT of P%d:%ds \n",i+1,p[i].TAT);
+		printf("WT of P%d : %ds \n",i+1,p[i].WT);
+		avgTime=avgTime+p[i].TAT;
+		avgWT=avgWT+p[i].WT;
+	}
+	avgTime=avgTime/n;
+	avgWT=avgWT/n;
+	printf("\nAverage turn around time: %fs",avgTime);
+	printf("\nAverage waiting time:%fs",avgWT);
+}
